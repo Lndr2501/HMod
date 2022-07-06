@@ -1,0 +1,102 @@
+from datetime import datetime
+from matplotlib.style import use
+from traceback import format_exception
+from nextcord import SlashOption
+import nextcord, einstellungen
+from nextcord.ext import commands
+from main import Embed as Embed
+
+
+class PrefixSuffix(commands.Cog):
+    def __init__(self, bot):
+        self.bot = bot
+        #self.extras = extras
+
+    @commands.Cog.listener("on_message")
+    async def checkpresuf(self, message):
+
+        prefix = self.bot.dbcursor.execute("SELECT prefix FROM users WHERE id = ?", (message.author.id,)).fetchone()[0]
+        suffix = self.bot.dbcursor.execute("SELECT suffix FROM users WHERE id = ?", (message.author.id,)).fetchone()[0]
+
+        if prefix is None:
+            prefix = ""
+        if suffix is None:
+            suffix = ""
+        try:
+
+            await message.author.edit(nick=f"{prefix}{message.author.display_name}{suffix}")
+        except Exception as e:
+            return
+
+    @nextcord.slash_command(name="prefix", description="[ Admin ] Setzte dir oder einem User einen neuen Prefix.", guild_ids=[einstellungen.guild], default_member_permissions=8)
+    async def prefix(self, interaction: nextcord.Interaction, user: nextcord.Member = SlashOption(description="[ Admin ] Setzte den Prefix eines anderen Nutzers.", required=False), prefix: str = SlashOption(description="[ Admin ] Setzte den Prefix eines anderen Nutzers.", required=False)):
+        if user == None:
+            user = interaction.user
+        if prefix == None:
+            prefix = ""
+        self.bot.dbcursor.execute(f"UPDATE users SET prefix = '{prefix}' WHERE id = {user.id}")
+        self.bot.dbconn.commit()
+        
+        suffix = self.bot.dbcursor.execute("SELECT suffix FROM users WHERE id = ?", (user.id,)).fetchone()[0]
+
+        await user.edit(nick=f"{prefix}{user.name}{suffix}")
+
+        embed = Embed(
+            title="Prefix gesetzt!",
+            description=f"Der Prefix von {user.mention} wurde auf {prefix} gesetzt!",
+            color=nextcord.Colour.green(),
+        )
+        embed.set_thumbnail(url=user.avatar)
+        await interaction.response.send_message(embed=embed)
+
+    @nextcord.slash_command(name="suffix", description="[ Admin ] Setzte dir oder einem User einen neuen Suffix.", guild_ids=[einstellungen.guild], default_member_permissions=8)
+    async def suffix(self, interaction: nextcord.Interaction, user: nextcord.Member = SlashOption(description="[ Admin ] Setzte den Suffix eines anderen Nutzers.", required=False), suffix: str = SlashOption(description="[ Admin ] Setzte den Suffix eines anderen Nutzers.", required=False)):
+        if user == None:
+            user = interaction.user
+        if suffix == None:
+            suffix = ""
+        self.bot.dbcursor.execute(f"UPDATE users SET suffix = '{suffix}' WHERE id = {user.id}")
+        self.bot.dbconn.commit()
+
+        prefix = self.bot.dbcursor.execute("SELECT prefix FROM users WHERE id = ?", (user.id,)).fetchone()[0]
+        
+        await user.edit(nick=f"{prefix}{user.name}{suffix}")
+
+        embed = Embed(
+            title="Suffix gesetzt!",
+            description=f"Der Suffix von {user.mention} wurde auf {suffix} gesetzt!",
+            color=nextcord.Colour.green(),
+        )
+        embed.set_thumbnail(url=user.avatar)
+        await interaction.response.send_message(embed=embed)
+    
+    
+    @commands.Cog.listener("on_member_update")
+    async def removenick(self, before, after):
+        if before.nick != after.nick:
+            prefix = self.bot.dbcursor.execute("SELECT prefix FROM users WHERE id = ?", (after.id,)).fetchone()[0]
+            suffix = self.bot.dbcursor.execute("SELECT suffix FROM users WHERE id = ?", (after.id,)).fetchone()[0]
+
+            if prefix is None:
+                prefix = ""
+            if suffix is None:
+                suffix = ""
+
+            await after.edit(nick=f"{prefix}{after.name}{suffix}")
+
+
+    @commands.Cog.listener("on_member_join")
+    async def addnick(self, member):
+        prefix = self.bot.dbcursor.execute("SELECT prefix FROM users WHERE id = ?", (member.id,)).fetchone()[0]
+        suffix = self.bot.dbcursor.execute("SELECT suffix FROM users WHERE id = ?", (member.id,)).fetchone()[0]
+
+        if prefix is None:
+            prefix = ""
+        if suffix is None:
+            suffix = ""
+
+        await member.edit(nick=f"{prefix}{member.name}{suffix}")
+
+
+def setup(bot):
+    bot.add_cog(PrefixSuffix(bot))
