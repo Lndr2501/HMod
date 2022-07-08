@@ -1,55 +1,47 @@
+import datetime
 from traceback import format_exception
+from unittest import result
 import nextcord, os, io, contextlib, textwrap
 from main import Embed as Embed
 from nextcord.ext import commands
+import aioconsole
+import asyncio
+import io
+import sys
+
 
 class Eval(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        #self.extras = extras
+        # self.extras = extras
 
-    @commands.command(name="eval", aliases=["run"])
+    @commands.command(name="eval")
     @commands.is_owner()
-    async def eval(self, ctx: commands.Context, *, code):
+    async def eval(self, ctx, *, code):
+        # a command to run code in the bot's environment (for debugging purposes)
 
-        code = code.strip("`") # Remove code block
-        code = code.strip("py")
-
-        
-        local_variables = {
-            "nextcord": nextcord,
-            "commands": commands,
-            "bot": self.bot,
-            "ctx": ctx,
-            "channel": ctx.channel,
-            "author": ctx.author,
-            "guild": ctx.guild,
-            "message": ctx.message
-        }
-
-        stdout = io.StringIO()
-
+        # FIXME
         try:
-            with contextlib.redirect_stdout(stdout):
-                exec(
-                    f"async def func():\n{textwrap.indent(code, '    ')}", local_variables,
-                )
-
-                obj = await local_variables["func"]()
-                result = f"{stdout.getvalue()}\n-- {obj}\n"
-                color = nextcord.Color.green()
+            variables = {
+                "ctx": ctx,
+                "bot": self.bot,
+                "nextcord": nextcord,
+                "__import__": __import__,
+            }
+            out = io.StringIO()
+            sys.stdout = out
+            await aioconsole.aexec(code, variables)
+            sys.stdout = sys.__stdout__
+            result = out.getvalue()
 
         except Exception as e:
-            result = "".join(format_exception(e, e, e.__traceback__))
-            color = nextcord.Color.red()
-
-
-        embed = Embed(
-        title="Eval Ergebnis",
-        description="```py\n" + result + "```",
-        color=color,
-        )
-        await ctx.send(content=f"{ctx.author.mention}", cembed=embed)
+            embed = Embed(
+                title="Eval - Error",
+                description=f"```py\n{format_exception(type(e), e, e.__traceback__)}```",
+                color=nextcord.Colour.red(),
+                timestamp=datetime.datetime.now(),
+            )
+            await ctx.reply(embed=embed)
 
 
 def setup(bot):
