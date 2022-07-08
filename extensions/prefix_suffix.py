@@ -7,6 +7,7 @@ from nextcord.ext import commands
 from main import Embed as Embed
 
 
+# TODO: Renew this code
 class PrefixSuffix(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
