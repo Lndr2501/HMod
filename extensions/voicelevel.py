@@ -22,6 +22,20 @@ class VoiceTime(commands.Cog):
         if not before.channel and after.channel:
             self.in_voice.update({member.id: datetime.datetime.now()})
 
+            data = self.bot.dbcursor.execute("SELECT 'last_voice' FROM 'users' WHERE 'id' = ?", (member.id,)).fetchone()
+            if data:
+                self.bot.dbcursor.execute(
+                    "UPDATE 'users' SET 'last_voice' = ? WHERE 'id' = ?",
+                    (datetime.datetime.now(), member.id),
+                )
+            else:
+                self.bot.dbcursor.execute(
+                    "INSERT INTO 'users' ('id', 'last_voice') VALUES (?, ?)",
+                    (member.id, datetime.datetime.now()),
+                )
+                self.bot.dbconn.commit()
+                
+
         elif before.channel and not after.channel:
             if time := self.in_voice.get(member.id):
                 minutes = int((datetime.datetime.now() - time).total_seconds() / 60)
