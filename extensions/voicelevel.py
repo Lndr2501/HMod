@@ -19,8 +19,7 @@ class VoiceLevel(commands.Cog):
             voicetime = self.bot.dbcursor.execute(f"SELECT voicetime FROM levels WHERE id = {user.id}").fetchone()[0]
 
             if voicetime is None:
-                embed = Archivment(archivment=ArchivmentType.FIRST_VOICE)
-                await user.send(embed=embed)
+                await user.send(embed=Archivment(user, ArchivmentType.FIRST_VOICE))
 
             # when voicetime over 10 minuten, level up
             if voicetime > 600:
