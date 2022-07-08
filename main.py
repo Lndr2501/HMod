@@ -6,10 +6,40 @@ from numpy import imag
 from click import command
 from nextcord import Colour
 from nextcord.ext import commands
-
+import PIL
+from PIL import Image
+from PIL import ImageDraw
+from PIL import ImageFont
 
 intents = nextcord.Intents.default()
 intents.members = True
+
+
+# Klass für die Erstellung von Bannern
+class Banner:
+    def __init__(self, text, color):
+        self.text = text
+        self.color = color
+
+    def create(self):
+        background = Image.open("./images/Banner.png")
+        draw = ImageDraw.Draw(background)
+        # get perfect font size
+        font = ImageFont.truetype("./arial.ttf", size=int(background.size[1] / 2))
+        # get text size
+        text_size = draw.textsize(self.text, font=font)
+        # get the middle of the image
+        w, h = background.size
+        text_width, text_height = draw.textsize(self.text, font=font)
+        text_x = (w - text_width) / 2
+        text_y = (h - text_height) / 2
+        draw.text((text_x, text_y), self.text, font=font, fill=self.color)
+
+        text = self.text.replace("#", "")
+        text = text.replace(" ", "_")
+
+        background.save(f"./images/Banner_{text}.png")
+        return f"./images/Banner_{text}.png"
 
 
 class Embed(nextcord.Embed):
