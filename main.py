@@ -43,6 +43,7 @@ class Embed(nextcord.Embed):
         self.set_image(url="https://i.imgur.com/9Fka6pN.png")
         self.set_footer(text=" ", icon_url="https://imgur.com/a/cAZMGH1.jpeg")
         self.timestamp = datetime.datetime.now()
+        self.color = nextcord.Colour.green()
 
 
 class ArchivmentType(Enum):

@@ -20,7 +20,7 @@ class Eval(commands.Cog):
     async def eval(self, ctx, *, code):
         # a command to run code in the bot's environment (for debugging purposes)
 
-        # FIXME
+        # FIXME: this doesn't work for some reason
         try:
             variables = {
                 "ctx": ctx,
@@ -33,6 +33,13 @@ class Eval(commands.Cog):
             await aioconsole.aexec(code, variables)
             sys.stdout = sys.__stdout__
             result = out.getvalue()
+
+            embed = Embed(
+                title="Eval",
+                description=f"```py\n{result}\n```",
+                color=nextcord.Colour.green(),
+            )
+            await ctx.reply(embed=embed)
 
         except Exception as e:
             embed = Embed(
