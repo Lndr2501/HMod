@@ -8,7 +8,7 @@ from main import Embed as Embed
 class VoiceTime(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        # self.extras = extras
+        # self.extras = extrass
 
         self.in_voice: dict[int, datetime.datetime] = {}
 
