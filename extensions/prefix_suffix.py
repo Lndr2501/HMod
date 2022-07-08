@@ -2,7 +2,7 @@ from datetime import datetime
 from matplotlib.style import use
 from traceback import format_exception
 from nextcord import SlashOption
-import nextcord, einstellungen
+import nextcord, settings
 from nextcord.ext import commands
 from main import Embed as Embed
 
@@ -28,7 +28,7 @@ class PrefixSuffix(commands.Cog):
         except Exception as e:
             return
 
-    @nextcord.slash_command(name="prefix", description="[ Admin ] Setzte dir oder einem User einen neuen Prefix.", guild_ids=[einstellungen.guild], default_member_permissions=8)
+    @nextcord.slash_command(name="prefix", description="[ Admin ] Setzte dir oder einem User einen neuen Prefix.", guild_ids=[settings.guild], default_member_permissions=8)
     async def prefix(self, interaction: nextcord.Interaction, user: nextcord.Member = SlashOption(description="[ Admin ] Setzte den Prefix eines anderen Nutzers.", required=False), prefix: str = SlashOption(description="[ Admin ] Setzte den Prefix eines anderen Nutzers.", required=False)):
         if user == None:
             user = interaction.user
@@ -49,7 +49,7 @@ class PrefixSuffix(commands.Cog):
         embed.set_thumbnail(url=user.avatar)
         await interaction.response.send_message(embed=embed)
 
-    @nextcord.slash_command(name="suffix", description="[ Admin ] Setzte dir oder einem User einen neuen Suffix.", guild_ids=[einstellungen.guild], default_member_permissions=8)
+    @nextcord.slash_command(name="suffix", description="[ Admin ] Setzte dir oder einem User einen neuen Suffix.", guild_ids=[settings.guild], default_member_permissions=8)
     async def suffix(self, interaction: nextcord.Interaction, user: nextcord.Member = SlashOption(description="[ Admin ] Setzte den Suffix eines anderen Nutzers.", required=False), suffix: str = SlashOption(description="[ Admin ] Setzte den Suffix eines anderen Nutzers.", required=False)):
         if user == None:
             user = interaction.user

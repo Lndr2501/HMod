@@ -1,6 +1,6 @@
 from datetime import datetime
 from nextcord import SlashOption
-import einstellungen, nextcord, random
+import settings, nextcord, random
 from nextcord.ext import commands
 from main import Embed
 

@@ -1,5 +1,5 @@
 from enum import Enum
-import os, nextcord, einstellungen, datetime, sqlite3
+import os, nextcord, settings, datetime, sqlite3
 from nextcord.ext import commands
 from PIL import Image
 from PIL import ImageDraw
@@ -89,8 +89,8 @@ class Bot(commands.Bot):
         self.dbconn: sqlite3.Connection = sqlite3.connect("./database.db")
         self.dbcursor: sqlite3.Cursor = self.dbconn.cursor()
 
-        self.game = einstellungen.game
-        self.server = einstellungen.guild
+        self.game = settings.game
+        self.server = settings.guild
 
         @self.command()
         @commands.is_owner()
@@ -148,8 +148,8 @@ class Bot(commands.Bot):
 # Create a bot instance and run it.
 bot = Bot(
     command_prefix=commands.when_mentioned,
-    owner_id=einstellungen.owner,
+    owner_id=settings.owner,
     help_command=None,
     intents=intents,
 )
-bot.run(einstellungen.token)
+bot.run(settings.token)
