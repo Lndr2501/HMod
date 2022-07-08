@@ -1,12 +1,6 @@
 from enum import Enum
 import os, nextcord, einstellungen, datetime, sqlite3
-
-from matplotlib import image
-from numpy import imag
-from click import command
-from nextcord import Colour
 from nextcord.ext import commands
-import PIL
 from PIL import Image
 from PIL import ImageDraw
 from PIL import ImageFont
@@ -94,7 +88,6 @@ class Bot(commands.Bot):
         self.dbconn: sqlite3.Connection = sqlite3.connect("./database.db")
         self.dbcursor: sqlite3.Cursor = self.dbconn.cursor()
 
-        self.token = einstellungen.token
         self.game = einstellungen.game
         self.server = einstellungen.guild
 
@@ -122,6 +115,34 @@ class Bot(commands.Bot):
             else:
                 print(f"Skipping {file}")
 
+    def calculate_level(self, experience):
+
+        if experience == 0:
+            return 0
+
+        level: int = 0
+        exp: int = 0
+
+        while experience >= exp:
+            level += 1
+            exp += level * 100
+
+        return level
+
+    def calculate_experience(self, level):
+        experience_maximum = 0
+
+        if level == 0:
+            return [0, 1]
+
+        for x in range(level):
+            x += 1
+            experience_maximum += x * 100
+
+        experience_minimum = experience_maximum - level * 100
+
+        return [experience_minimum, experience_maximum]
+
 
 # Create a bot instance and run it.
 bot = Bot(
@@ -130,4 +151,4 @@ bot = Bot(
     help_command=None,
     intents=intents,
 )
-bot.run(bot.token)
+bot.run(einstellungen.token)
