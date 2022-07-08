@@ -1,4 +1,6 @@
+from enum import Enum
 import os, nextcord, einstellungen, datetime, sqlite3
+
 from matplotlib import image
 from numpy import imag
 from click import command
@@ -16,6 +18,22 @@ class Embed(nextcord.Embed):
 
         self.set_image(url="https://i.imgur.com/9Fka6pN.png")
         self.set_footer(text=" ", icon_url="https://imgur.com/a/cAZMGH1.jpeg")
+        self.timestamp = datetime.datetime.now()
+
+
+class ArchivmentType(Enum):
+    FIRST_VOICE = ["Erstes mal in einem Sprachkanal!", "Du bist zum ersten mal in einem Sprachkanal! :D"]
+    FIRST_MESSAGE = ["Erstes mal Geschrieben!", "Du hast zum ersten mal etwas in den Chat geschrieben! :D"]
+
+class Archivment(nextcord.Embed):
+    def __init__(self, *args, archivment: ArchivmentType, **kwargs):
+        super().__init__(*args, archivment, **kwargs)
+
+        self.set_thumbnail(url="https://cdn.discordapp.com/emojis/938532159554220112.gif")
+        self.set_image(url="https://i.imgur.com/9Fka6pN.png")
+        self.set_footer(text=" ", icon_url="https://imgur.com/a/cAZMGH1.jpeg")
+        self.title = archivment.value[0]
+        self.description = archivment.value[1]
         self.timestamp = datetime.datetime.now()
 
 

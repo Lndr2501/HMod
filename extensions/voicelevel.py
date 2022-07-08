@@ -1,8 +1,9 @@
 from matplotlib.pyplot import title
+from matplotlib.style import use
 from nextcord import SlashOption
 import nextcord, time, einstellungen, datetime, sqlite3
 from nextcord.ext import commands
-from main import Embed as Embed
+from main import Archivment, ArchivmentType, Embed as Embed
 
 
 class VoiceLevel(commands.Cog):
@@ -17,28 +18,24 @@ class VoiceLevel(commands.Cog):
             # if voicetime 10 minuten oder mehr, dann level up
             voicetime = self.bot.dbcursor.execute(f"SELECT voicetime FROM levels WHERE id = {user.id}").fetchone()[0]
 
-            # convert voicetime to int with round() and convert to minutes
-            print(voicetime(type))
+            if voicetime is None:
+                embed = Archivment(archivment=ArchivmentType.FIRST_VOICE)
+                await user.send(embed=embed)
 
-            if voicetime >= 10:
-                # level up
-                self.bot.dbcursor.execute(f"UPDATE levels SET voicelevel = voicelevel + 1 WHERE id = {user.id}")
-                self.bot.dbconn.commit()
-
-                # reset voicetime
+            # when voicetime over 10 minuten, level up
+            if voicetime > 600:
+                self.bot.dbcursor.execute(f"UPDATE levels SET level = level + 1 WHERE id = {user.id}")
                 self.bot.dbcursor.execute(f"UPDATE levels SET voicetime = 0 WHERE id = {user.id}")
-                self.bot.dbconn.commit()
-
-
-                # send message
-                newlevel = self.bot.dbcursor.execute(f"SELECT voicelevel FROM levels WHERE id = {user.id}").fetchone()[0]
+                
+                voicelevel = self.bot.dbcursor.execute(f"SELECT voicelevel FROM levels WHERE id = {user.id}").fetchone()[0]
                 embed = Embed(
                     title=f"Sprachlevel erhöht",
-                    description=f"{user.mention} hat sein Sprachlevel erhöht auf {newlevel}",
+                    description=f"{user.mention} hat sein Sprachlevel erhöht auf {voicetime}",
                     color=nextcord.Color.green(),
                 )
-                await after.channel.send(embed=embed, content=f"{user.mention}")
+                await user.send(embed=embed)
 
+            
 
 
 
