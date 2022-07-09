@@ -1,4 +1,4 @@
 token = "OTkzNjU4MzM3ODM1MDk4MTMz.Ggp8qc.OqYonpREVAGRaDxZflEwh47p4evkFULj6Kh1RM"
 game = "with Lndr"
-guild = 993355470087651368
+guild = 898766854552690789
 owner = 927148345263271937

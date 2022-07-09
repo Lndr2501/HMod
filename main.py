@@ -1,15 +1,36 @@
+import datetime
+import os
+import sqlite3
 from enum import Enum
-import os, nextcord, settings, datetime, sqlite3
+
+import nextcord
 from nextcord.ext import commands
-from PIL import Image
-from PIL import ImageDraw
-from PIL import ImageFont
+from PIL import Image, ImageDraw, ImageFont
+
+import settings
 
 intents = nextcord.Intents.default()
 intents.members = True
 
 
+class YesNoButtons(nextcord.ui.View):
+    # add yesfunc and nofunc as arguments that are functions that are called when the buttons are pressed
+    def __init__(self, yesfunc, nofunc, yeslabel: str, nolabel: str):
+        super().__init__(timeout=60)
+
+    @nextcord.ui.button(label="Ja", style=nextcord.ButtonStyle.primary)
+    async def yes(self, button: nextcord.Button,
+                  interaction: nextcord.Interaction):
+        self.yesfunc()
+
+    @nextcord.ui.button(label="Nein", style=nextcord.ButtonStyle.danger)
+    async def no(self, button: nextcord.Button,
+                 interaction: nextcord.Interaction):
+        self.nofunc()
+
 # Klass für die Erstellung von Bannern
+
+
 class Banner:
     def __init__(self, text, color):
         self.text = text
@@ -19,7 +40,8 @@ class Banner:
         background = Image.open("./images/Banner.png")
         draw = ImageDraw.Draw(background)
         # get perfect font size
-        font = ImageFont.truetype("./arial.ttf", size=int(background.size[1] / 2))
+        font = ImageFont.truetype(
+            "./arial.ttf", size=int(background.size[1] / 2))
         # get text size
         text_size = draw.textsize(self.text, font=font)
         # get the middle of the image
@@ -69,7 +91,8 @@ class Archivment:
             color=nextcord.Colour.green(),
             timestamp=self.date,
         )
-        embed.set_image(url="https://cdn.discordapp.com/emojis/938532159554220112.gif")
+        embed.set_image(
+            url="https://cdn.discordapp.com/emojis/938532159554220112.gif")
 
         return embed
 
@@ -92,20 +115,7 @@ class Bot(commands.Bot):
         self.game = settings.game
         self.server = settings.guild
 
-        @self.command()
-        @commands.is_owner()
-        async def reload(ctx: commands.Context):
-            reloaded = []
-            for file in os.listdir("./extensions"):
-                if file.endswith(".py"):
-                    name = file[:-3]
-
-                    self.reload_extension(f"extensions.{name}")
-                    reloaded.append(name)
-                else:
-                    print(f"Skipping {file}")
-
-            await ctx.send(f"Reloaded: {', '.join(reloaded)}")
+        self.persistent_views_added = False
 
         for file in os.listdir("./extensions"):
             if file.endswith(".py"):
@@ -115,6 +125,29 @@ class Bot(commands.Bot):
                 print(f"Loaded {name}")
             else:
                 print(f"Skipping {file}")
+
+    @commands.command()
+    @commands.is_owner()
+    async def reload(self, ctx: commands.Context):
+        reloaded = []
+        for file in os.listdir("./extensions"):
+            if file.endswith(".py"):
+                name = file[:-3]
+
+                self.reload_extension(f"extensions.{name}")
+                reloaded.append(name)
+            else:
+                print(f"Skipping {file}")
+
+        await ctx.send(f"Reloaded: {', '.join(reloaded)}")
+
+    # async def on_ready(self):
+    #     # import a file from the extensions folder
+    #     #import extensions.rules as rules
+
+    #     if not self.persistent_views_added:
+    #         # self.add_view()  # ADD PERSISTENT VIEWS HERE
+    #         self.persistent_views_added = True
 
     def calculate_level(self, experience):
 
