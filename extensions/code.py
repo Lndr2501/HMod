@@ -2,6 +2,7 @@ from codecs import Codec
 import os
 from pydoc import describe
 from re import A
+from betterproto import T
 from nextcord import Interaction, SlashOption
 import nextcord
 import time
@@ -9,7 +10,7 @@ import settings
 import datetime
 import sqlite3
 from nextcord.ext import commands
-from main import Embed as Embed
+from main import Embed as Embed, Log, LogType
 
 supported_languages = [
     "Python",
@@ -168,6 +169,12 @@ class CodeCommand(commands.Cog):
                 await tmsg.edit(file=codefile, view=self)
 
         tmsg = await teamchannel.send(file=codefile, view=AbstimmButtons())
+
+        Log(
+            type=LogType.INFO,
+            text=f"{interaction.user.name}({interaction.user.id}) hat ein Code-Snippet hochgeladen.",
+            guild=interaction.guild,
+        )
 
         embed = Embed(
             title="Erfolgreich",

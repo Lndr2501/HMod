@@ -2,7 +2,8 @@ from datetime import datetime
 from matplotlib.style import use
 from traceback import format_exception
 from nextcord import SlashOption
-import nextcord, settings
+import nextcord
+import settings
 from nextcord.ext import commands
 from main import Embed as Embed
 
@@ -16,8 +17,10 @@ class PrefixSuffix(commands.Cog):
     @commands.Cog.listener("on_message")
     async def checkpresuf(self, message):
 
-        prefix = self.bot.dbcursor.execute("SELECT prefix FROM users WHERE id = ?", (message.author.id,)).fetchone()[0]
-        suffix = self.bot.dbcursor.execute("SELECT suffix FROM users WHERE id = ?", (message.author.id,)).fetchone()[0]
+        prefix = self.bot.dbcursor.execute(
+            "SELECT prefix FROM users WHERE id = ?", (message.author.id,)).fetchone()[0]
+        suffix = self.bot.dbcursor.execute(
+            "SELECT suffix FROM users WHERE id = ?", (message.author.id,)).fetchone()[0]
 
         if prefix is None:
             prefix = ""
@@ -35,10 +38,12 @@ class PrefixSuffix(commands.Cog):
             user = interaction.user
         if prefix == None:
             prefix = ""
-        self.bot.dbcursor.execute(f"UPDATE users SET prefix = '{prefix}' WHERE id = {user.id}")
+        self.bot.dbcursor.execute(
+            f"UPDATE users SET prefix = '{prefix}' WHERE id = {user.id}")
         self.bot.dbconn.commit()
-        
-        suffix = self.bot.dbcursor.execute("SELECT suffix FROM users WHERE id = ?", (user.id,)).fetchone()[0]
+
+        suffix = self.bot.dbcursor.execute(
+            "SELECT suffix FROM users WHERE id = ?", (user.id,)).fetchone()[0]
 
         await user.edit(nick=f"{prefix}{user.name}{suffix}")
 
@@ -56,11 +61,13 @@ class PrefixSuffix(commands.Cog):
             user = interaction.user
         if suffix == None:
             suffix = ""
-        self.bot.dbcursor.execute(f"UPDATE users SET suffix = '{suffix}' WHERE id = {user.id}")
+        self.bot.dbcursor.execute(
+            f"UPDATE users SET suffix = '{suffix}' WHERE id = {user.id}")
         self.bot.dbconn.commit()
 
-        prefix = self.bot.dbcursor.execute("SELECT prefix FROM users WHERE id = ?", (user.id,)).fetchone()[0]
-        
+        prefix = self.bot.dbcursor.execute(
+            "SELECT prefix FROM users WHERE id = ?", (user.id,)).fetchone()[0]
+
         await user.edit(nick=f"{prefix}{user.name}{suffix}")
 
         embed = Embed(
@@ -70,13 +77,14 @@ class PrefixSuffix(commands.Cog):
         )
         embed.set_thumbnail(url=user.avatar)
         await interaction.response.send_message(embed=embed)
-    
-    
+
     @commands.Cog.listener("on_member_update")
     async def removenick(self, before, after):
         if before.nick != after.nick:
-            prefix = self.bot.dbcursor.execute("SELECT prefix FROM users WHERE id = ?", (after.id,)).fetchone()[0]
-            suffix = self.bot.dbcursor.execute("SELECT suffix FROM users WHERE id = ?", (after.id,)).fetchone()[0]
+            prefix = self.bot.dbcursor.execute(
+                "SELECT prefix FROM users WHERE id = ?", (after.id,)).fetchone()[0]
+            suffix = self.bot.dbcursor.execute(
+                "SELECT suffix FROM users WHERE id = ?", (after.id,)).fetchone()[0]
 
             if prefix is None:
                 prefix = ""
@@ -85,11 +93,12 @@ class PrefixSuffix(commands.Cog):
 
             await after.edit(nick=f"{prefix}{after.name}{suffix}")
 
-
     @commands.Cog.listener("on_member_join")
     async def addnick(self, member):
-        prefix = self.bot.dbcursor.execute("SELECT prefix FROM users WHERE id = ?", (member.id,)).fetchone()[0]
-        suffix = self.bot.dbcursor.execute("SELECT suffix FROM users WHERE id = ?", (member.id,)).fetchone()[0]
+        prefix = self.bot.dbcursor.execute(
+            "SELECT prefix FROM users WHERE id = ?", (member.id,)).fetchone()[0]
+        suffix = self.bot.dbcursor.execute(
+            "SELECT suffix FROM users WHERE id = ?", (member.id,)).fetchone()[0]
 
         if prefix is None:
             prefix = ""

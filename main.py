@@ -1,7 +1,9 @@
+import asyncio
 import datetime
 import os
 import sqlite3
 from enum import Enum
+import aioconsole
 
 import nextcord
 from nextcord.ext import commands
@@ -68,6 +70,33 @@ class Embed(nextcord.Embed):
         self.color = nextcord.Colour.green()
 
 
+class LogType(Enum):
+    # EXAMPLE = ["Name", farbe, "bild", "message"]
+    INFO = ["Information", nextcord.Colour.green(
+    ), "https://cdn.discordapp.com/emojis/994876226403573774.png", ""]
+
+    WARNING = ["Warnung", nextcord.Colour.orange(
+    ), "https://cdn.discordapp.com/emojis/994876234301452288.png", "<@&995741534987223110>"]
+
+    EMERGENCY = ["Notfall", nextcord.Colour.red(
+    ), "https://cdn.discordapp.com/emojis/994876235383578704.png", "@here"]
+
+
+class Log(Embed):
+    def __init__(self, type: LogType, text: str, guild: nextcord.Guild):
+        super().__init__()
+
+        #self.set_author(name=type.value[0], icon_url=type.value[3])
+        self.title = type.value[0]
+        self.description = type.value[3] + "\n" + text
+        self.color = type.value[1]
+        self.logchannel = guild.get_channel(995739405769785364)
+
+        # await self.logchannel.send(embed=self)
+        # asyncio.create_task(self.logchannel.send(embed=self))
+        asyncio.create_task(self.logchannel.send(embed=self))
+
+
 class ArchivmentType(Enum):
     FIRST_VOICE = [
         "Erstes mal in einem Sprachkanal!",
@@ -126,8 +155,8 @@ class Bot(commands.Bot):
             else:
                 print(f"Skipping {file}")
 
-    @commands.command()
-    @commands.is_owner()
+    @ commands.command()
+    @ commands.is_owner()
     async def reload(self, ctx: commands.Context):
         reloaded = []
         for file in os.listdir("./extensions"):
