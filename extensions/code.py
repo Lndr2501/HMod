@@ -1,4 +1,5 @@
 from codecs import Codec
+import os
 from pydoc import describe
 from re import A
 from nextcord import Interaction, SlashOption
@@ -19,29 +20,6 @@ supported_languages = [
     "C#",
     "Go",
 ]
-
-
-class Abstimmung:
-    def __init__(self, language, codefile):
-        self.language = language
-        self.codefile = codefile
-
-    class AbstimmButtons(nextcord.ui.View):
-        def __init__(self):
-            super().__init__(timeout=None)
-
-        @nextcord.ui.button(label="Ja", style=nextcord.ButtonStyle.primary)
-        async def yes(self, button: nextcord.Button,
-                      interaction: nextcord.Interaction):
-
-            communitycode = interaction.guild.get_channel(994933082425663498)
-            communityembed = Embed(
-                title=f"Neues {Abstimmung.language}-Code-Snippet",
-                description=f"{interaction.user.mention} hat ein Code-Snippet hochgeladen.",
-                color=nextcord.Colour.green(),
-            )
-            await communitycode.send(content="<@&995670130019283035>", embed=communityembed)
-            await communitycode.send(file=Abstimmung.codefile)
 
 
 class CodeCommand(commands.Cog):
@@ -91,11 +69,11 @@ class CodeCommand(commands.Cog):
             await interaction.response.send_message(embed=embed, ephemeral=True)
             return
 
-        await code.save("snippets/community/" + code.filename)
+        await code.save("snippets/community/" + interaction.user.name + "_" + code.filename)
         # Edit the file and write from who the file was sent
-        with open("snippets/community/" + code.filename, "r") as f:
+        with open("snippets/community/" + interaction.user.name + "_" + code.filename, "r") as f:
             lines = f.readlines()
-        with open("snippets/community/" + code.filename, "w") as f:
+        with open("snippets/community/" + interaction.user.name + "_" + code.filename, "w") as f:
             kommentar = ""
             if ending == ".py":
                 kommentar = "#"
@@ -123,18 +101,73 @@ class CodeCommand(commands.Cog):
         )
         # Send the file
         teamchannel = interaction.guild.get_channel(995658446236029028)
-        codefile = nextcord.File("snippets/community/" + code.filename)
+        codefile = nextcord.File(
+            "snippets/community/" + interaction.user.name + "_" + code.filename)
         await teamchannel.send(embed=teamembed, content="<@&994857229280882709>")
-        await teamchannel.send(file=codefile)
 
-        # communitycode = interaction.guild.get_channel(994933082425663498)
-        # communityembed = Embed(
-        #     title=f"Neues {language}-Code-Snippet",
-        #     description=f"{interaction.user.mention} hat ein Code-Snippet hochgeladen.",
-        #     color=nextcord.Colour.green(),
-        # )
-        # await communitycode.send(content="<@&995670130019283035>", embed=communityembed)
-        # await communitycode.send(file=codefile)
+        class AbstimmButtons(nextcord.ui.View):
+            def __init__(self):
+                super().__init__(timeout=None)
+
+            @nextcord.ui.button(label="Hochladen", style=nextcord.ButtonStyle.primary)
+            async def yes(self, button: nextcord.Button,
+                          interaction: nextcord.Interaction):
+
+                communitycode = interaction.guild.get_channel(
+                    994933082425663498)
+                communityembed = Embed(
+                    title=f"Neues {language}-Code-Snippet",
+                    description=f"{interaction.user.mention} hat ein Code-Snippet hochgeladen.",
+                    color=nextcord.Colour.green(),
+                )
+                codefile = nextcord.File(
+                    "snippets/community/" + interaction.user.name + "_" + code.filename)
+                await communitycode.send(content="<@&995670130019283035>", embed=communityembed)
+                await communitycode.send(file=codefile)
+
+                # Delete the file after it was sent
+                os.remove("snippets/community/" +
+                          interaction.user.name + "_" + code.filename)
+
+                succesembed = Embed(
+                    title="Code-Snippet hochgeladen",
+                    description=f"Das Code-Snippet ist nun auf der Community-Seite verfügbar.",
+                    color=nextcord.Colour.green(),
+                )
+                await interaction.response.send_message(embed=succesembed, ephemeral=True)
+
+                button.disabled = True
+                button.label = "Hochgeladen"
+
+                self.no.disabled = True
+                self.no.label = f"~~{self.no.label}~~"
+
+                await tmsg.edit(file=codefile, view=self)
+
+            @nextcord.ui.button(label="Löschen", style=nextcord.ButtonStyle.danger)
+            async def no(self, button: nextcord.Button,
+                         interaction: nextcord.Interaction):
+
+                # Delete the file after it was sent
+                os.remove("snippets/community/" +
+                          interaction.user.name + "_" + code.filename)
+
+                succesembed = Embed(
+                    title="Code-Snippet nicht hochgeladen",
+                    description=f"Das Code-Snippet ist abgelehnt worden, und wurde gelöscht.",
+                    color=nextcord.Colour.red(),
+                )
+                await interaction.response.send_message(embed=succesembed, ephemeral=True)
+
+                button.disabled = True
+                button.label = "Abgelehnt"
+
+                self.yes.disabled = True
+                self.yes.label = f"~~{self.yes.label}~~"
+
+                await tmsg.edit(file=codefile, view=self)
+
+        tmsg = await teamchannel.send(file=codefile, view=AbstimmButtons())
 
         embed = Embed(
             title="Erfolgreich",
