@@ -24,7 +24,7 @@ class RuleLinks(nextcord.ui.View):
                                          url="https://discord.com/privacy"))
 
 
-class Rules(commands.Cog):
+class RulesCommand(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
         # self.extras = extras
@@ -62,10 +62,8 @@ class Rules(commands.Cog):
         )
 
         await channel.send(embed=embed, view=RuleLinks())
-
-        await asyncio.sleep(1)
         await interaction.response.send_message("Regeln wurden gesendet.", ephemeral=True)
 
 
 def setup(bot):
-    bot.add_cog(Rules(bot))
+    bot.add_cog(RulesCommand(bot))
